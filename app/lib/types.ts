@@ -73,6 +73,13 @@ export type AttendanceSummary = {
   risk: "safe" | "at-risk" | "critical";
 };
 
+export type ExamEntry = {
+  examIndex: number;
+  date: string;
+  attended: boolean;
+  marksObtained: string;
+  marksTotal: string;
+};
 
 export type AnalyticsTabProps = {
   attendanceSummary: AttendanceSummary[];
@@ -89,7 +96,6 @@ export type AnalyticsTabProps = {
 //   onSave: () => void;
 //   onClose: () => void;
 // };
-
 
 export type BottomTabsProps = {
   tabs: readonly { id: AppTab; label: string }[];
@@ -122,7 +128,6 @@ export type SidebarTabsProps = {
   activeTab: AppTab;
   onSelect: (tab: AppTab) => void;
 };
-
 
 export type SettingsTabProps = {
   attendanceTargetPercent: number;

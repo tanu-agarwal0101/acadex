@@ -1,6 +1,14 @@
 import type { AttendanceStatus, ColorKey, DayLabel, Subject } from "./idb";
 
-export const DAYS: DayLabel[] = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+export const DAYS: DayLabel[] = [
+  "Mon",
+  "Tue",
+  "Wed",
+  "Thu",
+  "Fri",
+  "Sat",
+  "Sun",
+];
 
 export const COLOR_STYLES: Record<
   ColorKey,
@@ -144,6 +152,7 @@ export const TABS = [
   { id: "homework", label: "Homework" },
   { id: "notes", label: "Notes" },
   { id: "analytics", label: "Analytics" },
+  { id: "exams", label: "Exams" },
   { id: "settings", label: "Settings" },
 ] as const;
 

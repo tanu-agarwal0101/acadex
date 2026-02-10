@@ -11,9 +11,11 @@ import usePwaStatus from "../hooks/usePwaStatus";
 import useScheduleSettings from "../hooks/useScheduleSettings";
 import useSubjectsAndBlocks from "../hooks/useSubjectsAndBlocks";
 import useTimeSlots from "../hooks/useTimeSlots";
+import useExamRecords from "../hooks/useExamRecords";
 import AnalyticsTab from "./AnalyticsTab";
 import AttendanceModal from "./AttendanceModal";
 import BottomTabs from "./BottomTabs";
+import ExamsTab from "./ExamsTab";
 import HeaderSection from "./HeaderSection";
 import HomeworkTab from "./HomeworkTab";
 import NotesTab from "./NotesTab";
@@ -116,6 +118,9 @@ export default function AppClient() {
     setAttendanceRecords,
     onError: setError,
   });
+
+  const { internalCount, setInternalCount, subjectsWithEntries, updateEntry } =
+    useExamRecords(subjects);
 
   const dayGridClasses = useMemo(
     () => getGridColsClasses(visibleDays.length),
@@ -248,6 +253,16 @@ export default function AppClient() {
                 attendanceSummary={attendanceSummary}
                 attendanceTargetPercent={attendanceTargetPercent}
                 onTargetChange={setAttendanceTargetPercent}
+              />
+            ) : null}
+
+            {activeTab === "exams" ? (
+              <ExamsTab
+                subjects={subjects}
+                internalCount={internalCount}
+                onInternalCountChange={setInternalCount}
+                subjectsWithEntries={subjectsWithEntries}
+                onUpdateEntry={updateEntry}
               />
             ) : null}
 
