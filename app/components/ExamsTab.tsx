@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import type { ExamEntry, Subject } from "../lib/types";
 
 const formatExamLabel = (index: number) => `Internal ${index + 1}`;
@@ -24,6 +25,23 @@ export default function ExamsTab({
   subjectsWithEntries,
   onUpdateEntry,
 }: ExamsTabProps) {
+  const [internalCountInput, setInternalCountInput] = useState(
+    internalCount.toString(),
+  );
+
+  useEffect(() => {
+    setInternalCountInput(internalCount.toString());
+  }, [internalCount]);
+
+  const commitInternalCount = () => {
+    const nextValue = Number(internalCountInput.trim());
+    if (Number.isNaN(nextValue)) {
+      setInternalCountInput(internalCount.toString());
+      return;
+    }
+    onInternalCountChange(nextValue);
+  };
+
   return (
     <section className="space-y-6">
       <div className="rounded-3xl border border-white/10 bg-(--panel)/80 p-6">
@@ -47,10 +65,14 @@ export default function ExamsTab({
                 type="number"
                 min={1}
                 max={8}
-                value={internalCount}
-                onChange={(event) =>
-                  onInternalCountChange(Number(event.target.value || 1))
-                }
+                value={internalCountInput}
+                onChange={(event) => setInternalCountInput(event.target.value)}
+                onBlur={commitInternalCount}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter") {
+                    commitInternalCount();
+                  }
+                }}
                 className="w-20 rounded-xl border border-white/10 bg-(--panel-strong) px-3 py-2 text-sm text-white focus:border-emerald-300/60 focus:outline-none"
               />
               <span className="text-xs text-slate-300/70">exams</span>

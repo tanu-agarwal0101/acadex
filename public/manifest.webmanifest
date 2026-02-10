@@ -1,6 +1,6 @@
 {
-  "name": "Academics Weekly Studio",
-  "short_name": "Academics",
+  "name": "Acadex",
+  "short_name": "Acadex",
   "description": "Offline-first weekly timetable for personal academic tracking.",
   "start_url": "/",
   "scope": "/",
