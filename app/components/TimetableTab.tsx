@@ -18,7 +18,9 @@ import {
   MAX_TIME_SLOTS,
   ROW_START,
 } from "../lib/ui-data";
-import { formatHours } from "../lib/time-utils";
+import { formatDate, formatHours, getDayLabel } from "../lib/time-utils";
+
+const DAY_ORDER: DayLabel[] = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 type TimetableTabProps = {
   subjectForm: SubjectFormState;
@@ -116,6 +118,29 @@ export default function TimetableTab({
   totalMinutes,
   onSaveTimetable,
 }: TimetableTabProps) {
+  const selectedDate = new Date(`${attendanceDate}T00:00:00`);
+  const selectedDayLabel = getDayLabel(selectedDate);
+  const weekStartLabel = visibleDays[0];
+  const weekStartIndex = DAY_ORDER.indexOf(weekStartLabel);
+  const selectedIndex = DAY_ORDER.indexOf(selectedDayLabel);
+  const startOffset = (selectedIndex - weekStartIndex + 7) % 7;
+  const weekStartDate = new Date(selectedDate);
+  weekStartDate.setDate(selectedDate.getDate() - startOffset);
+
+  const formatDayDate = (day: DayLabel) => {
+    const dayIndex = DAY_ORDER.indexOf(day);
+    if (dayIndex === -1 || weekStartIndex === -1) {
+      return "";
+    }
+    const offset = (dayIndex - weekStartIndex + 7) % 7;
+    const date = new Date(weekStartDate);
+    date.setDate(weekStartDate.getDate() + offset);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const dayOfMonth = String(date.getDate()).padStart(2, "0");
+    return formatDate(`${year}-${month}-${dayOfMonth}`);
+  };
+
   return (
     <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
       <div className="min-w-0 space-y-6">
@@ -521,7 +546,12 @@ export default function TimetableTab({
                       : "border-white/10 text-slate-300/70"
                   }`}
                 >
-                  {day}
+                  <div className="flex flex-col items-center gap-1">
+                    <span>{day}</span>
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-slate-300/70">
+                      {formatDayDate(day)}
+                    </span>
+                  </div>
                 </button>
               ))}
             </div>
@@ -645,9 +675,12 @@ export default function TimetableTab({
                 {visibleDays.map((day) => (
                   <div
                     key={day}
-                    className="text-xs uppercase tracking-[0.3em] text-slate-300/70"
+                    className="flex flex-col gap-1 text-xs uppercase tracking-[0.3em] text-slate-300/70"
                   >
-                    {day}
+                    <span>{day}</span>
+                    <span className="text-[10px] uppercase tracking-[0.3em] text-slate-400/70">
+                      {formatDayDate(day)}
+                    </span>
                   </div>
                 ))}
               </div>
