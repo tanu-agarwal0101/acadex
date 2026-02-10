@@ -12,6 +12,7 @@ import useScheduleSettings from "../hooks/useScheduleSettings";
 import useSubjectsAndBlocks from "../hooks/useSubjectsAndBlocks";
 import useTimeSlots from "../hooks/useTimeSlots";
 import useExamRecords from "../hooks/useExamRecords";
+import useSwUpdate from "../hooks/useSwUpdate";
 import AnalyticsTab from "./AnalyticsTab";
 import AttendanceModal from "./AttendanceModal";
 import BottomTabs from "./BottomTabs";
@@ -121,6 +122,8 @@ export default function AppClient() {
 
   const { internalCount, setInternalCount, subjectsWithEntries, updateEntry } =
     useExamRecords(subjects);
+
+  const { updateAvailable, handleRefresh } = useSwUpdate();
 
   const dayGridClasses = useMemo(
     () => getGridColsClasses(visibleDays.length),
@@ -285,6 +288,26 @@ export default function AppClient() {
       </main>
 
       <BottomTabs tabs={TABS} activeTab={activeTab} onSelect={setActiveTab} />
+
+      {updateAvailable ? (
+        <div className="fixed bottom-20 left-1/2 z-50 w-[min(92vw,520px)] -translate-x-1/2 rounded-2xl border border-emerald-400/40 bg-(--panel)/95 px-4 py-3 text-sm text-slate-100 shadow-xl shadow-black/40">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <span className="text-xs uppercase tracking-[0.3em] text-emerald-200/80">
+              Update available
+            </span>
+            <button
+              type="button"
+              onClick={handleRefresh}
+              className="rounded-full border border-emerald-400/40 bg-emerald-400/20 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-100"
+            >
+              Refresh
+            </button>
+          </div>
+          <p className="mt-2 text-sm text-slate-200/80">
+            New version available - refresh to update.
+          </p>
+        </div>
+      ) : null}
 
       <AttendanceModal
         activeSession={activeSession}
