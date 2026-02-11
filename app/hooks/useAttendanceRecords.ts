@@ -71,12 +71,23 @@ export default function useAttendanceRecords({
     return map;
   }, [attendanceRecords, attendanceDate]);
 
+  const uniqueAttendanceRecords = useMemo(() => {
+    const map = new Map<string, AttendanceRecord>();
+    attendanceRecords.forEach((record) => {
+      const current = map.get(record.id);
+      if (!current || record.updatedAt > current.updatedAt) {
+        map.set(record.id, record);
+      }
+    });
+    return Array.from(map.values());
+  }, [attendanceRecords]);
+
   const homeworkMeta = useMemo(() => {
     const map = new Map<
       string,
       { dueDate?: string; done?: boolean; updatedAt: number }
     >();
-    attendanceRecords.forEach((record) => {
+    uniqueAttendanceRecords.forEach((record) => {
       if (!record.homeworkNext || !record.homeworkNext.trim()) {
         return;
       }
@@ -94,7 +105,7 @@ export default function useAttendanceRecords({
   }, [attendanceRecords]);
 
   const homeworkItems = useMemo(() => {
-    const items = attendanceRecords
+    const items = uniqueAttendanceRecords
       .filter((record) =>
         record.homeworkNext ? record.homeworkNext.trim() : false,
       )
@@ -131,14 +142,14 @@ export default function useAttendanceRecords({
       }
       return a.subjectName.localeCompare(b.subjectName);
     });
-  }, [attendanceRecords, subjectLookup, homeworkMeta]);
+  }, [uniqueAttendanceRecords, subjectLookup, homeworkMeta]);
 
   const notesBySubject = useMemo(() => {
     const map = new Map<
       string,
       { subjectName: string; records: AttendanceRecord[] }
     >();
-    attendanceRecords.forEach((record) => {
+    uniqueAttendanceRecords.forEach((record) => {
       if (!record.notes || !record.notes.trim()) {
         return;
       }
@@ -159,15 +170,22 @@ export default function useAttendanceRecords({
         records: entry.records.sort((a, b) => b.date.localeCompare(a.date)),
       }))
       .sort((a, b) => a.subjectName.localeCompare(b.subjectName));
-  }, [attendanceRecords, subjectLookup]);
+  }, [uniqueAttendanceRecords, subjectLookup]);
 
   const attendanceSummary = useMemo(() => {
     const bySubject = new Map<
       string,
-      { name: string; total: number; totalNoBunk: number; attended: number }
+      {
+        name: string;
+        total: number;
+        totalNoBunk: number;
+        attended: number;
+        bunks: number;
+        totalWithBunks: number;
+      }
     >();
 
-    attendanceRecords.forEach((record) => {
+    uniqueAttendanceRecords.forEach((record) => {
       const name =
         subjectLookup.get(record.subjectId)?.name ?? "Unknown subject";
       const entry = bySubject.get(record.subjectId) ?? {
@@ -175,15 +193,21 @@ export default function useAttendanceRecords({
         total: 0,
         totalNoBunk: 0,
         attended: 0,
+        bunks: 0,
+        totalWithBunks: 0,
       };
 
       if (record.status !== "holiday") {
         entry.total += 1;
+        entry.totalWithBunks += 1;
         if (record.status !== "bunk") {
           entry.totalNoBunk += 1;
         }
         if (record.status === "present") {
           entry.attended += 1;
+        }
+        if (record.status === "bunk") {
+          entry.bunks += 1;
         }
       }
 
@@ -215,13 +239,15 @@ export default function useAttendanceRecords({
           total: entry.total,
           totalNoBunk: entry.totalNoBunk,
           attended: entry.attended,
+          bunks: entry.bunks,
+          totalWithBunks: entry.totalWithBunks,
           percent,
           required,
           risk,
         };
       })
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [attendanceRecords, subjectLookup, attendanceTarget]);
+  }, [uniqueAttendanceRecords, subjectLookup, attendanceTarget]);
 
   const todayISO = new Date().toISOString().slice(0, 10);
   const attendanceIsFuture = attendanceForm.date > todayISO;

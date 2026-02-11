@@ -68,6 +68,8 @@ export type AttendanceSummary = {
   total: number;
   totalNoBunk: number;
   attended: number;
+  bunks: number;
+  totalWithBunks: number;
   percent: number;
   required: number;
   risk: "safe" | "at-risk" | "critical";

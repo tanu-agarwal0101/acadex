@@ -1,14 +1,18 @@
 "use client";
 
+import { useState } from "react";
 import { formatPercent } from "../lib/time-utils";
 import type { AnalyticsTabProps } from "../lib/types";
-
 
 export default function AnalyticsTab({
   attendanceSummary,
   attendanceTargetPercent,
   onTargetChange,
 }: AnalyticsTabProps) {
+  const [upcomingBySubject, setUpcomingBySubject] = useState<
+    Record<string, string>
+  >({});
+
   return (
     <section className="space-y-6">
       <div className="rounded-3xl border border-white/10 bg-(--panel)/80 p-6">
@@ -61,6 +65,17 @@ export default function AnalyticsTab({
                 : summary.risk === "at-risk"
                   ? "border-amber-400/50 text-amber-100"
                   : "border-rose-400/50 text-rose-100";
+            const upcomingText = upcomingBySubject[summary.subjectId] ?? "";
+            const upcoming = Math.max(0, Number(upcomingText || 0));
+            const targetFraction = attendanceTargetPercent / 100;
+            const maxMissRaw =
+              summary.attended +
+              upcoming -
+              targetFraction * (summary.totalWithBunks + upcoming);
+            const maxMiss = Math.max(
+              0,
+              Math.min(upcoming, Math.floor(maxMissRaw)),
+            );
 
             return (
               <div
@@ -83,7 +98,7 @@ export default function AnalyticsTab({
                   </span>
                 </div>
 
-                <div className="mt-4 grid gap-3 sm:grid-cols-4">
+                <div className="mt-4 grid gap-3 sm:grid-cols-5">
                   <div className="rounded-2xl border border-white/10 bg-(--panel-strong) px-4 py-3">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/70">
                       Attended
@@ -94,10 +109,18 @@ export default function AnalyticsTab({
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-(--panel-strong) px-4 py-3">
                     <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/70">
-                      Total (no bunks)
+                      Bunks
                     </p>
                     <p className="mt-2 text-lg font-semibold text-white">
-                      {summary.totalNoBunk}
+                      {summary.bunks}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-(--panel-strong) px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/70">
+                      Total classes
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {summary.totalWithBunks}
                     </p>
                   </div>
                   <div className="rounded-2xl border border-white/10 bg-(--panel-strong) px-4 py-3">
@@ -116,6 +139,43 @@ export default function AnalyticsTab({
                       {summary.totalNoBunk > 0
                         ? formatPercent(summary.attended / summary.totalNoBunk)
                         : "0%"}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-white/10 bg-(--panel-strong) px-4 py-3">
+                    <label
+                      htmlFor={`upcoming-${summary.subjectId}`}
+                      className="text-[10px] uppercase tracking-[0.3em] text-slate-300/70"
+                    >
+                      Upcoming classes
+                    </label>
+                    <input
+                      id={`upcoming-${summary.subjectId}`}
+                      type="number"
+                      min={0}
+                      value={upcomingText}
+                      onChange={(event) => {
+                        setUpcomingBySubject((prev) => ({
+                          ...prev,
+                          [summary.subjectId]: event.target.value,
+                        }));
+                      }}
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-(--panel-strong) px-3 py-2 text-sm text-white focus:border-emerald-300/60 focus:outline-none"
+                    />
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-(--panel-strong) px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-[0.3em] text-slate-300/70">
+                      Must attend / can miss
+                    </p>
+                    <p className="mt-2 text-lg font-semibold text-white">
+                      {Number.isFinite(upcoming)
+                        ? `${Math.max(0, upcoming - maxMiss)} / ${maxMiss}`
+                        : "0 / 0"}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-300/70">
+                      Based on {attendanceTargetPercent}% target.
                     </p>
                   </div>
                 </div>
